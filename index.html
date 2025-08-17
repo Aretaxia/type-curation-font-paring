@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pair the Fonts — Premium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@600&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Raleway:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-1:#0f1720; --bg-2:#111827;
+      --card:#0b1220; --muted:#9aa4b2; --accent:#ffcc66; --success:#2ecc71; --danger:#ff6b6b;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background: linear-gradient(135deg,var(--bg-1),var(--bg-2));
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      color: #e6eef8;
+      display:flex;align-items:center;justify-content:center;padding:24px;
+    }
+
+    /* Frame: mobile-first, responsive; locked 16:9 on wide screens */
+    .frame{
+      width:min(1200px,98vw);
+      max-width:1200px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
+      border-radius:16px;padding:18px;box-shadow:0 20px 60px rgba(2,6,23,0.6);
+      display:flex;flex-direction:column;gap:12px;overflow:hidden;
+    }
+    @media(min-width:900px){ .frame{ aspect-ratio:16/9; } }
+
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ff8a66);display:flex;align-items:center;justify-content:center;font-weight:800;color:#071027}
+    .title{font-size:1.15rem;font-weight:700}
+    .progress{color:var(--muted);font-weight:600}
+
+    .main{display:flex;gap:18px;flex:1;align-items:stretch}
+    .left{flex:1;display:flex;flex-direction:column;gap:12px}
+    .right{width:420px;min-width:260px;display:flex;flex-direction:column;gap:12px}
+
+    .panel{background:var(--glass);border-radius:12px;padding:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+
+    .heading-sample{font-size:40px;line-height:1.05;padding:18px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));display:flex;align-items:center;justify-content:center;text-align:center}
+
+    .question{color:var(--muted);font-weight:600}
+
+    .options{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+    .opt{
+      display:flex;flex-direction:row;gap:12px;align-items:center;padding:12px;border-radius:12px;background:rgba(255,255,255,0.02);cursor:pointer;transition:all .28s cubic-bezier(.2,.9,.3,1);border:1px solid rgba(255,255,255,0.03);
+    }
+    .opt:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(2,6,23,0.45)}
+    .opt .sample{flex:1}
+    .opt .meta{width:160px;text-align:right;color:var(--muted);font-weight:700}
+
+    .opt.correct{border-color:rgba(46,204,113,0.18);background:linear-gradient(90deg, rgba(46,204,113,0.06), rgba(255,255,255,0.01));box-shadow:0 8px 28px rgba(46,204,113,0.06)}
+    .opt.wrong{border-color:rgba(255,107,107,0.14);background:linear-gradient(90deg, rgba(255,107,107,0.03), rgba(255,255,255,0.01));box-shadow:0 8px 28px rgba(255,107,107,0.04)}
+
+    .explain{font-size:0.95rem;color:#dbe7f7;opacity:0;transform:translateY(6px);transition:all .28s}
+    .explain.show{opacity:1;transform:translateY(0)}
+
+    .footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .btn{padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#ff8a66);color:#071027;font-weight:800;cursor:pointer}
+
+    /* congrats overlay */
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(0deg, rgba(2,6,23,0.6), rgba(2,6,23,0.4));backdrop-filter:blur(3px);}
+    .congrats{background:linear-gradient(180deg,#071033,#0b2040);padding:28px;border-radius:14px;text-align:center;box-shadow:0 30px 80px rgba(2,6,23,0.7)}
+    .congrats h2{color:var(--accent);margin:0 0 8px 0}
+    .congrats p{color:var(--muted);margin:0 0 16px 0}
+
+    /* small responsive tweaks */
+    @media(max-width:880px){ .main{flex-direction:column} .right{width:100%} .heading-sample{font-size:28px} }
+  </style>
+</head>
+<body>
+  <div class="frame" id="frame">
+    <div class="topbar">
+      <div class="brand"><div class="logo">Pf</div><div><div class="title">Pair the Fonts</div><div class="progress" id="progressLabel">Level 1 / 5</div></div></div>
+      <div><button id="restartBtn" class="btn">Restart</button></div>
+    </div>
+
+    <div class="main">
+      <div class="left">
+        <div class="panel">
+          <div class="question" id="questionText">Which body font pairs best with this heading?</div>
+          <div id="headingSample" class="heading-sample" aria-live="polite">Playfair Display</div>
+        </div>
+
+        <div class="panel">
+          <div class="question" style="margin-bottom:8px">Options — click to choose</div>
+          <div id="options" class="options"></div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="panel">
+          <div style="font-weight:800;color:var(--muted)">Explanation</div>
+          <div id="explainBox" class="explain">Choose an option to see reasoning and uses.</div>
+        </div>
+
+        <div class="panel">
+          <div style="font-weight:800;color:var(--muted);margin-bottom:8px">About the font</div>
+          <div id="fontInfo" style="color:var(--muted)">Live examples show real pairing behavior. Try to read the tone, personality and contrast between heading and body.</div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px">
+          <button id="nextBtn" class="btn" style="display:none">Next Level →</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:8px"></div>
+  </div>
+
+  <!-- confetti canvas overlay -->
+  <canvas id="confetti" style="position:fixed;left:0;top:0;pointer-events:none;display:none;z-index:9999"></canvas>
+
+<script>
+// -------- Data: 5 levels with options, explanation & use-cases --------
+const LEVELS = [
+  {
+    heading: 'Playfair Display',
+    sampleText: 'Playfair Display',
+    options: [
+      {name:'Roboto', font:'Roboto, system-ui, sans-serif', correct:true, explain:'Roboto is a neutral, highly readable sans-serif — it provides the clean counterpoint to Playfair\'s high-contrast serifs.', uses:'Best for editorial websites and long-form body copy paired with elegant headings.'},
+      {name:'Lora', font:'Lora, serif', correct:false, explain:'Two serifs together reduce contrast; the pairing feels heavy and competitive.', uses:'Works if you intentionally want a classical tone, but not ideal here.'},
+      {name:'Montserrat', font:'Montserrat, system-ui, sans-serif', correct:false, explain:'Strong geometric sans vs Playfair\'s classical stroke contrast — can clash in tone.', uses:'Good for display contexts, less for body pairing.'}
+    ]
+  },
+  {
+    heading: 'Montserrat', sampleText:'Montserrat',
+    options: [
+      {name:'Open Sans', font:'Open Sans, system-ui, sans-serif', correct:true, explain:'Open Sans reads softer and more neutral than Montserrat, giving comfortable body readability.', uses:'Web UI, marketing sites, and apps.'},
+      {name:'Playfair Display', font:"'Playfair Display', serif", correct:false, explain:'A decorative serif can feel inconsistent with Montserrat\'s geometric simplicity.', uses:'Use when you want a strong editorial headline + modern subtitle, but not for body text.'},
+      {name:'Lora', font:'Lora, serif', correct:false, explain:'Serif body competes with the modern geometric heading rather than complementing it.', uses:'Use for classic/heritage brands rather than minimal modern brands.'}
+    ]
+  },
+  {
+    heading: 'Lora', sampleText:'Lora',
+    options: [
+      {name:'Open Sans', font:'Open Sans, system-ui, sans-serif', correct:true, explain:'Open Sans provides neutral legibility to complement Lora\'s characterful serif.', uses:'Blogs, long-form reading, editorial sites.'},
+      {name:'Merriweather', font:'Merriweather, serif', correct:false, explain:'Two warm serifs create redundancy and reduce hierarchy.', uses:'Works in type-driven print layouts, not ideal here.'},
+      {name:'Raleway', font:'Raleway, system-ui, sans-serif', correct:false, explain:'Raleway is display-first and can feel too airy for dense body copy.', uses:'Display usage, headings, short captions.'}
+    ]
+  },
+  {
+    heading: 'Raleway', sampleText:'Raleway',
+    options: [
+      {name:'Lora', font:'Lora, serif', correct:true, explain:'Lora\'s readable serif grounds Raleway\'s display nature for body content.', uses:'Design-led sites that need elegant headings + readable bodies.'},
+      {name:'Roboto', font:'Roboto, system-ui, sans-serif', correct:false, explain:'Both sans fonts — less hierarchy; Roboto also reads as neutral but not the best contrast.', uses:'Ui/Apps where neutral bodies are required.'},
+      {name:'Merriweather', font:'Merriweather, serif', correct:false, explain:'Too heavy and may visually compete; Lora is a better tonal match.', uses:'Traditional editorial use—choose carefully.'}
+    ]
+  },
+  {
+    heading: 'Merriweather', sampleText:'Merriweather',
+    options: [
+      {name:'Montserrat', font:'Montserrat, system-ui, sans-serif', correct:true, explain:'Montserrat\'s geometric clarity pairs well with Merriweather\'s readable serif weight.', uses:'Magazine layouts, marketing sites, balanced editorial design.'},
+      {name:'Open Sans', font:'Open Sans, system-ui, sans-serif', correct:false, explain:'Readable but lacks the strong personality contrast Montserrat provides.', uses:'Neutral sites where subtlety is preferred.'},
+      {name:'Raleway', font:'Raleway, system-ui, sans-serif', correct:false, explain:'Both can fight for attention if not tuned carefully.', uses:'Use with care; better for headlines/captions.'}
+    ]
+  }
+];
+
+// -------- State and elements --------
+let levelIndex = 0;
+let locked = false;
+const totalLevels = LEVELS.length;
+const progressLabel = document.getElementById('progressLabel');
+const headingSample = document.getElementById('headingSample');
+const optionsEl = document.getElementById('options');
+const explainBox = document.getElementById('explainBox');
+const nextBtn = document.getElementById('nextBtn');
+const restartBtn = document.getElementById('restartBtn');
+const frame = document.getElementById('frame');
+const confettiCanvas = document.getElementById('confetti');
+
+// responsive confetti canvas size
+function resizeConfetti(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeConfetti);
+resizeConfetti();
+
+// -------- UI Helpers --------
+function setProgress(){ progressLabel.textContent = `Level ${levelIndex+1} / ${totalLevels}`; }
+
+function clearOptions(){ optionsEl.innerHTML = ''; explainBox.classList.remove('show'); explainBox.textContent = 'Choose an option to see reasoning and uses.'; nextBtn.style.display = 'none'; }
+
+function loadLevel(i){
+  levelIndex = i;
+  locked = false;
+  setProgress();
+  const lvl = LEVELS[levelIndex];
+  headingSample.textContent = lvl.sampleText;
+  headingSample.style.fontFamily = lvl.heading + ', serif';
+
+  clearOptions();
+
+  lvl.options.forEach((opt, idx) => {
+    const div = document.createElement('div');
+    div.className = 'opt panel';
+    div.setAttribute('role','button'); div.tabIndex = 0;
+
+    const sample = document.createElement('div'); sample.className='sample';
+    sample.style.fontFamily = opt.font;
+    sample.textContent = opt.name === lvl.heading ? `${opt.name} (same)` : `The quick brown fox — ${opt.name}`;
+
+    const meta = document.createElement('div'); meta.className='meta'; meta.textContent = opt.name;
+
+    div.appendChild(sample); div.appendChild(meta);
+
+    // keyboard support
+    div.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onChoose(opt, div); } });
+
+    div.addEventListener('click', ()=> onChoose(opt, div));
+
+    optionsEl.appendChild(div);
+  });
+}
+
+function onChoose(opt, el){
+  if(locked) return; // prevent multiple clicks
+  locked = true; // lock until response processed
+
+  // visual feedback
+  if(opt.correct){
+    el.classList.add('correct');
+    explainBox.textContent = `✅ ${opt.explain}\n\nUse cases: ${opt.uses}`;
+    explainBox.classList.add('show');
+    // play subtle animation
+    el.animate([{ transform: 'scale(1)' },{ transform:'scale(1.03)' },{ transform:'scale(1)'}],{ duration:420, easing:'cubic-bezier(.2,.9,.3,1)' });
+    // proceed to next after short delay
+    setTimeout(()=>{
+      // if last level -> congrats
+      if(levelIndex >= totalLevels-1){ showCongrats(); }
+      else{ loadLevel(levelIndex+1); }
+      locked = false;
+    }, 1000);
+  } else {
+    el.classList.add('wrong');
+    explainBox.textContent = `❌ ${opt.explain}\n\nUse cases: ${opt.uses}`;
+    explainBox.classList.add('show');
+    // shake animation for wrong answer
+    el.animate([{ transform:'translateX(0)'},{ transform:'translateX(-8px)'},{ transform:'translateX(8px)'},{ transform:'translateX(0)'}],{ duration:420 });
+    // remove wrong highlight after delay and allow retry
+    setTimeout(()=>{ el.classList.remove('wrong'); locked = false; }, 1100);
+  }
+}
+
+// restart
+restartBtn.addEventListener('click', ()=>{ levelIndex = 0; loadLevel(0); window.scrollTo({top:0,behavior:'smooth'}); });
+
+// nextBtn (not used for auto progression but kept for accessibility)
+nextBtn.addEventListener('click', ()=>{ if(levelIndex < totalLevels-1) loadLevel(levelIndex+1); else showCongrats(); });
+
+// Congrats overlay + confetti
+function showCongrats(){
+  // create overlay
+  const overlay = document.createElement('div'); overlay.className='overlay';
+  const box = document.createElement('div'); box.className='congrats';
+  box.innerHTML = `<h2>🎉 Congratulations!</h2><p>You’ve completed all levels — you now understand practical font pairing principles.</p><div style="display:flex;gap:12px;justify-content:center;margin-top:14px"><button id='proceedBtn' class='btn'>Proceed to next section</button><button id='replayBtn' class='btn' style='background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)'>Play again</button></div>`;
+  overlay.appendChild(box); document.body.appendChild(overlay);
+  runConfetti();
+
+  document.getElementById('proceedBtn').addEventListener('click', ()=>{ window.location.href = '/next-lesson'; });
+  document.getElementById('replayBtn').addEventListener('click', ()=>{ document.body.removeChild(overlay); levelIndex=0; loadLevel(0); });
+}
+
+// Simple confetti particle system on full window canvas
+function runConfetti(){
+  const ctx = confettiCanvas.getContext('2d');
+  confettiCanvas.style.display='block';
+  const w = confettiCanvas.width = window.innerWidth;
+  const h = confettiCanvas.height = window.innerHeight;
+  const particles = [];
+  const colors = ['#ffcc66','#ff7a66','#6be5c2','#7ea7ff','#d18bff'];
+  for(let i=0;i<150;i++){
+    particles.push({ x: Math.random()*w, y: Math.random()*-h, vy: 2+Math.random()*4, vx: -3+Math.random()*6, size: 6+Math.random()*10, color: colors[Math.floor(Math.random()*colors.length)], rot: Math.random()*360, vrota: -0.1+Math.random()*0.2 });
+  }
+  let t=0;
+  function step(){
+    ctx.clearRect(0,0,w,h);
+    for(let p of particles){
+      p.x += p.vx; p.y += p.vy; p.vy += 0.02; p.rot += p.vrota;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+      ctx.restore();
+    }
+    t+=1;
+    if(t<240) requestAnimationFrame(step); else { confettiCanvas.style.display='none'; ctx.clearRect(0,0,w,h); }
+  }
+  step();
+}
+
+// init
+loadLevel(0);
+</script>
+</body>
+</html>
